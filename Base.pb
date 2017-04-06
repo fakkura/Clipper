@@ -11,15 +11,15 @@ Procedure.s DecodeString(Input.s)
   ProcedureReturn Decoded
 EndProcedure
 
-Address$ = EncodeString("bitcoin address"); enter your bitcoin address here
+Address$ = EncodeString("address"); enter your bitcoin address here
 
-If CreateFile(0, "based.txt")
+If CreateFile(0, "Based.txt"); the string of your encoded bitcoin address will be saved in the Based.txt file
   WriteString(0, Address$)
 EndIf
 
 Debug Address$ 
 Debug DecodeString(Address$)
 ; IDE Options = PureBasic 5.50 (Windows - x86)
-; CursorPosition = 15
+; CursorPosition = 20
 ; Folding = -
 ; EnableXP
